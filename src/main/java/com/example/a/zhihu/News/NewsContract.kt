@@ -1,13 +1,14 @@
 package com.example.a.zhihu.News
 
-import com.example.a.zhihu.Data.NewsData
+import com.example.a.zhihu.Data.Story
+import com.example.a.zhihu.Data.TopStory
 
 interface NewsContract {
     interface UIView {
         fun onError()
         fun onNull()
-        fun addRecyclerData(stories: List<NewsData.StoriesBean>, date: String)
-        fun addBannerData(topStories: List<NewsData.TopStoriesBean>)
+        fun addRecyclerData(stories: List<Story>, date: String)
+        fun addBannerData(topStories: List<TopStory>)
         fun refreshData()
     }
 

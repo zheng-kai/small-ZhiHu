@@ -1,23 +1,25 @@
 package com.example.a.zhihu.News
 
-import android.icu.lang.UCharacter.GraphemeClusterBreak.L
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v4.widget.SwipeRefreshLayout
+import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.widget.Toast
 import com.example.a.zhihu.Data.NewsData
 import com.example.a.zhihu.R
 import com.example.a.zhihu.RecyclerAdapter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-class NewsUI : AppCompatActivity() ,NewsContract.UIView {
+class NewsUI : AppCompatActivity(), NewsContract.UIView {
 
-    private lateinit var recycler : RecyclerView
-    private lateinit var recyclerAdapter : RecyclerAdapter
-    private lateinit var refresh : SwipeRefreshLayout
-    private var presenter  = NewsPresenter(this)
+    private lateinit var recycler: RecyclerView
+    private lateinit var recyclerAdapter: RecyclerAdapter
+    private lateinit var refresh: SwipeRefreshLayout
+    private var presenter = NewsPresenter(this)
     private var key = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,18 +27,24 @@ class NewsUI : AppCompatActivity() ,NewsContract.UIView {
 
         recycler = findViewById(R.id.recyclerview)
         initRecyclerAdapter()
-        presenter.addData()
+        GlobalScope.launch {
+            withContext(Dispatchers.IO) {
+                presenter.addData()
+            }
+        }
         initRefresh()
         initScroll()
     }
-    fun initRecyclerAdapter(){
+
+    fun initRecyclerAdapter() {
         recyclerAdapter = RecyclerAdapter(this)
         val recyclerLayoutManager = LinearLayoutManager(this)
         recyclerLayoutManager.orientation = LinearLayoutManager.VERTICAL
         recycler.layoutManager = recyclerLayoutManager
-        recycler.setAdapter(recyclerAdapter)
+        recycler.adapter = recyclerAdapter
     }
-    fun initRefresh(){
+
+    fun initRefresh() {
         refresh = findViewById(R.id.refresh)
         refresh.setOnRefreshListener {
             refreshData()
@@ -58,25 +66,30 @@ class NewsUI : AppCompatActivity() ,NewsContract.UIView {
                 visibleItemCount = recyclerView.childCount
                 if (totalItemCount - visibleItemCount <= firstVisibleItem && key) {
                     key = false
-                    presenter.addData()
+                    GlobalScope.launch {
+                        withContext(Dispatchers.IO) {
+                            presenter.addData()
+                        }
+                    }
                 }
             }
         })
     }
+
     override fun onError() {
         key = true
-        Toast.makeText(this,"网络错误",Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "网络错误", Toast.LENGTH_SHORT).show()
     }
 
     override fun onNull() {
         key = true
-        Toast.makeText(this,"没有您想要的内容",Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "没有您想要的内容", Toast.LENGTH_SHORT).show()
     }
 
-    override fun addRecyclerData(stories: List<NewsData.StoriesBean>,date : String) {
-        recyclerAdapter.addRVData(stories,date)
+    override fun addRecyclerData(stories: List<NewsData.StoriesBean>, date: String) {
+        recyclerAdapter.addRVData(stories, date)
         key = true
-        Toast.makeText(this,"刷新成功",Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "刷新成功", Toast.LENGTH_SHORT).show()
     }
 
     override fun addBannerData(topStories: List<NewsData.TopStoriesBean>) {
@@ -85,9 +98,12 @@ class NewsUI : AppCompatActivity() ,NewsContract.UIView {
 
     override fun refreshData() {
         key = false
-        presenter.clearData()
         recyclerAdapter.clearData()
-        presenter.addData()
-
+        presenter.clearData()
+        GlobalScope.launch {
+            withContext(Dispatchers.IO) {
+                presenter.addData()
+            }
+        }
     }
 }

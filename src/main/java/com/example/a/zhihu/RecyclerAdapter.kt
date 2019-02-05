@@ -2,6 +2,7 @@ package com.example.a.zhihu
 
 import android.content.Context
 import android.content.Intent
+import android.support.v4.view.PagerAdapter
 import android.support.v4.view.ViewPager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
@@ -14,6 +15,7 @@ import android.widget.TextView
 import com.example.a.zhihu.Data.NewsData
 import com.example.a.zhihu.Details.WebUI
 import com.squareup.picasso.Picasso
+import kotlinx.android.synthetic.main.activity_news.view.*
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -24,8 +26,9 @@ class RecyclerAdapter(var context: Context) : RecyclerView.Adapter<RecyclerView.
     private var datePositon = 1
     private var lastDotPositon = 0
     private var stories: ArrayList<NewsData.StoriesBean> = ArrayList()
+    private var topStories : ArrayList<NewsData.TopStoriesBean> = ArrayList()
     private var positionAndDate: HashMap<Int, String> = HashMap()
-    private var pagerAdapter = ViewPagerAdapter(context)
+    private lateinit var pagerAdapter : PagerAdapter
     private lateinit var linearLayout: LinearLayout
     var date: Date = Date()
     fun addRVData(stories: List<NewsData.StoriesBean>, date: String) {
@@ -38,19 +41,8 @@ class RecyclerAdapter(var context: Context) : RecyclerView.Adapter<RecyclerView.
     }
 
     fun addBannerData(topStories: List<NewsData.TopStoriesBean>) {
-        pagerAdapter.addData(topStories)
-        for (i in 1..topStories.size) {
-            var view = View(context)
-            view.setBackgroundResource(R.drawable.dot)
-            var param = LinearLayout.LayoutParams(20, 20)
-            view.isEnabled = i == 1
-            if (i != 1) {
-                param.leftMargin = 5
-            }
-            linearLayout.addView(view, param)
-        }
+        this.topStories.addAll(topStories)
         notifyDataSetChanged()
-
         Log.d("recyclerData", "addBannerData")
 
     }
@@ -58,11 +50,9 @@ class RecyclerAdapter(var context: Context) : RecyclerView.Adapter<RecyclerView.
     fun clearData() {
         stories.clear()
         positionAndDate.clear()
-        pagerAdapter.clear()
         notifyDataSetChanged()
         lastDotPositon = 0
         datePositon = 1
-        linearLayout.removeAllViews()
         Log.d("recyclerData", "ClearData")
 
     }
@@ -72,6 +62,16 @@ class RecyclerAdapter(var context: Context) : RecyclerView.Adapter<RecyclerView.
         return if (p1 == BANNER_TYPE) {
             view = LayoutInflater.from(context).inflate(R.layout.recycler_banner, p0, false)
             linearLayout = view.findViewById(R.id.dotslayout)
+            for (i in 1..topStories.size) {
+                val view = View(context)
+                view.setBackgroundResource(R.drawable.dot)
+                val param = LinearLayout.LayoutParams(20, 20)
+                view.isEnabled = i == 1
+                if (i != 1) {
+                    param.leftMargin = 5
+                }
+                linearLayout.addView(view, param)
+            }
             BannerHolder(view)
         } else {
             view = LayoutInflater.from(context).inflate(R.layout.recycler_item, p0, false)
@@ -89,6 +89,7 @@ class RecyclerAdapter(var context: Context) : RecyclerView.Adapter<RecyclerView.
 
     override fun onBindViewHolder(p0: RecyclerView.ViewHolder, p1: Int) {
         if (p0 is BannerHolder) {
+            pagerAdapter = ViewPagerAdapter(context,topStories)
             p0.viewpager.adapter = pagerAdapter
         } else if (p0 is StoriesHolder) {
             p0.storyTitle.text = stories[p1 - 1].title
@@ -148,34 +149,6 @@ class RecyclerAdapter(var context: Context) : RecyclerView.Adapter<RecyclerView.
         }
     }
 
-    fun formatDate(date: String): String {
-        val calendar = Calendar.getInstance()
-        val format = SimpleDateFormat("yymmdd")
-        var d: Date? = null
-        try {
-            d = format.parse(date)
-            Log.d("date", d.toString())
-        } catch (e: ParseException) {
-            e.printStackTrace()
-        }
-
-        calendar.time = d!!
-        val day = calendar.get(Calendar.DAY_OF_WEEK)
-        var str = ""
-        when (day) {
-            1 -> str = "星期日"
-            2 -> str = "星期一"
-            3 -> str = "星期二"
-            4 -> str = "星期三"
-            5 -> str = "星期四"
-            6 -> str = "星期五"
-            7 -> str = "星期六"
-            else -> {
-            }
-        }
-        return date.substring(4, 6) + "月" + date.substring(6) + "日 " + str
-    }
-
     fun getWeek(date: String): String {
         val week = arrayOf("星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六")
         val d = date.substring(0, 4) + "-" + date.substring(4, 6) + "-" + date.substring(6)
@@ -192,10 +165,10 @@ class RecyclerAdapter(var context: Context) : RecyclerView.Adapter<RecyclerView.
                     date.substring(6) + "日 " + week[c.get(Calendar.DAY_OF_WEEK) - 1]
         else {
             if (date[6] != '0')
-                return date.substring(5,6) + "月" +
+                return date.substring(5, 6) + "月" +
                         date.substring(6) + "日 " + week[c.get(Calendar.DAY_OF_WEEK) - 1]
             else {
-                return date.substring(5,6) + "月" +
+                return date.substring(5, 6) + "月" +
                         date.substring(7) + "日 " + week[c.get(Calendar.DAY_OF_WEEK) - 1]
             }
         }
