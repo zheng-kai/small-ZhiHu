@@ -9,18 +9,32 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import com.example.a.zhihu.Data.NewsData
+import com.example.a.zhihu.Data.TopStory
 import com.example.a.zhihu.Details.WebUI
 import com.squareup.picasso.Picasso
 
-class ViewPagerAdapter(private var context: Context) : PagerAdapter() {
+class ViewPagerAdapter(
+    private var context: Context,
+    private var topStories: List<TopStory>
+) : PagerAdapter() {
 
-    private var topStories = ArrayList<NewsData.TopStoriesBean>()
-    fun addData(topStories : List<NewsData.TopStoriesBean>){
-        this.topStories.addAll(topStories)
+
+//    fun addData(topStories: List<NewsData.TopStoriesBean>) {
+//        this.topStories.addAll(topStories)
+//    }
+//
+//    fun clear() {
+//        topStories.clear()
+//    }
+//
+//    fun dataIsEmpty(): Boolean {
+//        return topStories.isEmpty()
+//    }
+
+    fun getData(): String {
+        return topStories.toString()
     }
-    fun clear(){
-        topStories.clear()
-    }
+
     override fun isViewFromObject(p0: View, p1: Any): Boolean {
         return p0 == p1
     }
@@ -30,9 +44,9 @@ class ViewPagerAdapter(private var context: Context) : PagerAdapter() {
     }
 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
-        val view = LayoutInflater.from(context).inflate(R.layout.banner_item,container,false)
-        val imageView : ImageView = view.findViewById(R.id.banner_image)
-        val textView : TextView = view.findViewById(R.id.banner_title)
+        val view = LayoutInflater.from(context).inflate(R.layout.banner_item, container, false)
+        val imageView: ImageView = view.findViewById(R.id.banner_image)
+        val textView: TextView = view.findViewById(R.id.banner_title)
         Picasso.with(context).load(topStories[position].image)
             .fit()
             .centerCrop()
@@ -42,12 +56,13 @@ class ViewPagerAdapter(private var context: Context) : PagerAdapter() {
         textView.text = topStories[position].title
         view.setOnClickListener {
             val intent = Intent(context, WebUI::class.java)
-            intent.putExtra("id",topStories[position].id)
+            intent.putExtra("id", topStories[position].id)
             context.startActivity(intent)
         }
         container.addView(view)
         return view
     }
+
     override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
         container.removeView(`object` as View)
     }

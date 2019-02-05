@@ -28,8 +28,7 @@ class WebUI : AppCompatActivity() , WebContract.UIView {
     }
 
     override fun updata(data : DetailData) {
-        var body : String = data.body
-        body.replace("<img", "<img style='max-width:100%;height:auto;'")
+        val body : String = data.body.replace("<img", "<img style='max-width:100%;height:auto;'")
         webView.loadDataWithBaseURL(null, "<html><body>$body</body></html", "text/html", "utf-8", null)
     }
 
@@ -37,13 +36,15 @@ class WebUI : AppCompatActivity() , WebContract.UIView {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.web)
 
-        var intent = intent
+        val intent = intent
         id = intent.getIntExtra("id",0)
 
         webView = findViewById(R.id.webview)
-        val settings = webView.settings
-        settings.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
-        settings.setSupportZoom(true)
+        webView.settings.apply{
+            cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
+            setSupportZoom(true)
+        }
+
         presenter.addData()
     }
 }

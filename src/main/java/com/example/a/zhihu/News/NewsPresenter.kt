@@ -1,8 +1,12 @@
 package com.example.a.zhihu.News
 
-import android.icu.lang.UCharacter.GraphemeClusterBreak.L
 import android.util.Log
 import com.example.a.zhihu.Data.NewsData
+import com.example.a.zhihu.Data.Story
+import com.example.a.zhihu.Data.TopStory
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -24,16 +28,17 @@ class NewsPresenter(var NewsUI : NewsContract.UIView) : NewsContract.Presenter {
         call.enqueue(object : Callback<NewsData> {
             override fun onResponse(call: Call<NewsData>, response: Response<NewsData>) {
                 val data = response.body()
-                if (data?.getStories() == null) {
+                if (data?.stories == null) {
                     NewsUI.onNull()
                     Log.d("recyclerData","onNull")
 
                 } else {
+
                     if (date == null) {
-                        NewsUI.addBannerData(data.getTop_stories() as List<NewsData.TopStoriesBean>)
+                        NewsUI.addBannerData(data.top_stories)
                     }
-                    date = data.getDate()
-                    NewsUI.addRecyclerData(data.getStories() as List<NewsData.StoriesBean>, date.toString())
+                    date = data.date
+                    NewsUI.addRecyclerData(data.stories , date.toString())
                     Log.d("recyclerData","updata")
                 }
             }
